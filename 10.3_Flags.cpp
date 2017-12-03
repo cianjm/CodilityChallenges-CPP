@@ -1,59 +1,82 @@
 /*
-It took several attempts to get this right:
 
-    1) 33% https://codility.com/demo/results/trainingPZXYU2-N8Z/
-    2) 53% https://codility.com/demo/results/trainingQ8HZUB-CHU/
-    3) 93% https://codility.com/demo/results/training76JBJ8-A25/
-    4) 100% https://codility.com/demo/results/trainingGX6JKR-F4S/
+	Report: https://codility.com/demo/results/trainingYCR9J8-YTS/
+
 */
 
-#include <iomanip>
 #include <math.h>
-#include <algorithm>
 
 int solution(vector<int> &A) {
-    int lastpeak = 0;
-    vector<int> distances;
-    
-    if (A.size() < 3)
-        return 0;
-    
-    for (unsigned int i = 1; i < A.size()-1 ; i++) {
-        // If peak is found
-        if ( A[i] > A[i-1] && A[i] > A[i+1] ) {
-            //cout << "i is " << i << endl;
-            distances.push_back(i - lastpeak);
-            lastpeak = i;
-        }
-    }
-    
-    if (distances.empty())
-        return 0;
-    
-    // for (unsigned int i = 0; i < distances.size() ; i++) {
-    //     cout << distances[i] << " " ;
-    // }
-    int X;
-    double N = lastpeak+1 - distances[0];
-    X = (1 + sqrt( 1 + 4*(N-1) ) ) / 2;
-    //cout << "\nN is " << N << ", X is " << X << endl;
-    
-    int flags, accumulator, maxflags = 1;
-    for (int i = X ; i > maxflags ; i--) {
-        accumulator = 0;
-        flags = 1;
-        for (unsigned int j = 1 ; j < distances.size() ; j++) {
-            accumulator += distances[j];
-            if (accumulator >= i) {
-                flags++;
-                if (flags == X)
-                    return flags;
-                accumulator = 0;
-            }
-        }
-        maxflags = max(flags, maxflags);
-        //cout << "i is " << i << " and maxflags is " << maxflags << endl;
-    }
-        
-    return maxflags;
+	if (A.size() < 3) {
+		return 0;
+	}
+	
+	// STEP 1: Find the numbers that N is divisible by
+	int N = A.size();
+	vector<int> divisors, peaks;
+	for (int i = 2 ; i <= N/2; i++) {
+		if (N%i == 0) {
+			divisors.push_back(i);
+		}
+	}
+	
+	// for (unsigned int i = 0 ; i < divisors.size(); i++) {
+		// cout << divisors[i] << " ";
+	// }
+	// cout << endl;
+	
+	// STEP 2: Find locations of all peaks
+	for (int i = 1 ; i < N-1 ; i++) {
+		if (A[i] > A[i-1] && A[i] > A[i+1]) {
+			peaks.push_back(i);
+		}
+	}
+
+	// If there are no peaks, return 0
+	if (peaks.empty())
+		return 0;
+	// If there is just one peak, the only block size can be 1
+	else if (peaks.size() == 1)
+		return 1;
+	
+	// for (unsigned int i = 0 ; i < peaks.size(); i++) {
+	//     //cout << peaks[i] << " ";
+	// }
+	// cout << endl;
+	
+	// STEP 3: For each divisible number, check if the locations of the peaks work
+	//int maxblocks = min(N/A[i], peaks.length());
+	
+	// Loop through each divisor
+	int start, end;
+	for (unsigned int i = 0; i < divisors.size() ; i++) {
+		start = 0;
+		end = divisors[i]-1;
+		//cout << "\nStart: " << start << " and End: " << end << endl;
+		// Loop through the peaks
+		for (unsigned int j = 0; j < peaks.size() ; j++) {
+			// cout << "Peak " << j << " is " << peaks[j] << endl;
+			// If the peak falls within the range of the block
+			if (peaks[j] <= end && peaks[j] >= start) {
+				//cout << "Acceptable" << endl;
+				start += divisors[i];
+				end += divisors[i];
+				//cout << "NEW Start: " << start << " and End: " << end << endl;
+			}
+			// If the next peak comes after the block
+			else if (peaks[j] > end) {
+				break;
+			}
+			// If the end of the original array is reached
+			if (start == N) {
+				//cout << "The end: " << N/divisors[i] << endl;
+				return N/divisors[i];
+			}
+		}
+	}
+	// If there were peaks but they couldn't be divided up
+	if (!peaks.empty())
+		return 1;
+	
+	return 0;
 }
