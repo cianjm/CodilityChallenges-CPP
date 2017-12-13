@@ -1,5 +1,5 @@
 /*
-
+Timed out initially because I had to go to Palmerstown. Got it first time when I came back. 
 	Report: https://codility.com/demo/results/trainingYCR9J8-YTS/
 
 */
